@@ -1,8 +1,8 @@
 # Module 3 Playbook Submission — Service Request Portal
 
-**Name:** [YOUR NAME]
-**Live URL:** [YOUR NETLIFY URL]
-**Repo:** [YOUR GITHUB REPO URL]
+**Name:** [YOUR NAME]Cole Pelzer
+**Live URL:** [YOUR NETLIFY URL]https://morrowlane-portal-pelzerc.netlify.app/
+**Repo:** [YOUR GITHUB REPO URL]https://github.com/PelzerC/morrowlane-portal/tree/main
 
 ## What I built
 
