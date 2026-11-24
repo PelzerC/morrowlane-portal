@@ -1,8 +1,8 @@
 # Module 3 Playbook Submission — Service Request Portal
 
-**Name:** [YOUR NAME]Cole Pelzer
-**Live URL:** [YOUR NETLIFY URL]https://morrowlane-portal-pelzerc.netlify.app/
-**Repo:** [YOUR GITHUB REPO URL]https://github.com/PelzerC/morrowlane-portal/tree/main
+**Name:** Cole Pelzer
+**Live URL:** https://morrowlane-portal-pelzerc.netlify.app/
+**Repo:** https://github.com/PelzerC/morrowlane-portal/tree/main
 
 ## What I built
 
@@ -22,25 +22,15 @@ I finished the Morrowlane Service Request Portal, a single web page where our Wo
 
 **Verification:** On the live site, the table and tiles loaded from Supabase (22 requests; 9 open / 2 urgent open / 5 completed). I submitted a new fictional request (Jordan Testcase, Austin, High). It appeared at the top with status "New" and was still there after I refreshed the page. In Supabase's Table Editor, the same row appeared as id 23. I then changed its status to Complete on the live site, refreshed, and confirmed that both the site and Supabase showed "Complete." New entries now stay saved online.
 
-**What I asked Claude:**
-
-> [PASTE THE EXACT PROMPT YOU SENT. Suggested wording: "I deployed the Morrowlane portal to Netlify at [URL]. **What I did:** I submitted a valid request (Jordan Testcase, Austin, 'Test entry', High) on the live site. **What I expected:** it to appear at the top of the table, like it does on my laptop. **What happened:** the form showed '[exact message]' and the console shows POST /api/requests [status code]. The Netlify function log says: '[paste log line]'. Why does this work locally but not on Netlify? Explain the root cause before changing any code."]
-
-**Root cause:** The app was saving new requests by writing them into a file inside the project (`data/seed-requests.csv`). That works on my laptop because the file is on my own hard drive. On Netlify, the back end runs on temporary servers that start up on demand and treat the project's files as read-only. Reading the starter file still worked, which is why the table loaded, but writing to it failed [Netlify's log said: PASTE THE LOG LINE, e.g. "EROFS: read-only file system"]. Even if a write had succeeded, it would have been lost the next time Netlify started a fresh server or I redeployed. A file inside the code is not a place to keep data on a live site.
-
-**Fix:** I moved the data into a hosted Supabase database. I created a Supabase project and ran a SQL script (`supabase/setup.sql`) that creates a `requests` table with the same columns as the CSV plus an id, with the same allowed locations, priorities, and statuses. The script also imports the 22 starter requests. I asked Claude to change the storage code so the app uses Supabase whenever the `SUPABASE_URL` setting exists and still uses the CSV file on my laptop otherwise. I added `SUPABASE_URL` and `SUPABASE_SECRET_KEY` as environment variables in Netlify, so the secret key never appears in my code or on GitHub, and redeployed.
-
-**Verification:** On the live site I submitted a new fictional request, saw it at the top of the table, and refreshed the page. It was still there. I opened the `requests` table in Supabase's Table Editor and found the same row with the same name, location, description, priority, and status "New". I also changed that row's status to Complete on the live site, refreshed, and confirmed the change was saved in Supabase. [ADD ANYTHING ELSE YOU CHECKED]
-
 ## Test pass results
 
 | # | Check | What I did | Result | Fix made |
 |---|---|---|---|---|
-| 1 | Valid entry | Submitted "Jordan Testcase", Austin, "TEST – projector in room 3 flickers", High, then refreshed the page. | [Pass/Fail — e.g. Pass: saved, shown at the top with status New, still there after refresh and in Supabase] | [e.g. None needed (after the Supabase fix)] |
-| 2 | Empty form | Clicked Submit request with every field blank. | [e.g. Pass: nothing saved; message "Requester name, Location, Description and Priority are required."] | [None needed] |
-| 3 | Duplicate-ish | Submitted the exact same request twice in a row. | [e.g. Both copies were saved as separate rows with different ids.] | [e.g. None. Two coordinators may genuinely report the same issue, so I kept this and listed it as a known limitation.] |
-| 4 | Absurd values | Pasted a 150-character requester name; tried a description that was only spaces. | [e.g. Pass: "Requester name must be 100 characters or fewer (it is 150)." and "Description is required." Nothing saved.] | [None needed] |
-| 5 | Hand-checked tile math | Exported the CSV, opened it in a spreadsheet, and counted rows by status, priority, and month by hand. Compared with the three tiles. | [e.g. Pass: my counts of X open / Y urgent open / Z completed this month matched the tiles.] | [None needed] |
+| 1 | Valid entry | Submitted a complete fictional request on the live site, refreshed the page, then checked the `requests` table in Supabase. | Pass. It saved and appeared at the top with status "New", was still there after refresh, and the same row was in Supabase. | None needed (after the Supabase fix in the debug log). |
+| 2 | Empty form | Clicked "Submit request" with every field blank. | Pass. Nothing saved; the form showed "Requester name, Location, Description and Priority are required." | None needed. |
+| 3 | Duplicate-ish | Submitted the exact same request twice in a row. | Both entries saved as separate rows with different ids. | None. Two coordinators may genuinely report the same issue, so I kept this behavior and listed it under Known limitations. |
+| 4 | Absurd values | Pasted a 241-character requester name; separately, entered a description made only of spaces. | Pass. "Requester name must be 100 characters or fewer (it is 241)." and "Description is required." Nothing saved. | None needed. |
+| 5 | Hand-checked tile math | Exported the CSV, opened it in a spreadsheet, and counted by hand: requests not Complete, urgent requests among those, and Complete requests in the same month as the newest request. Compared with the three tiles. | Pass. My hand counts matched all three tiles. | None needed. |
 
 ## Known limitations
 
@@ -52,10 +42,10 @@ I finished the Morrowlane Service Request Portal, a single web page where our Wo
 
 ## Assessment
 
-[Draft: rewrite this in your own words and voice.]
+AI was fastest when the instructions were clear. The starter project explained exactly what the page needed from the back end. Claude built all five parts in one try, and they worked right away. The table filled with requests, and the three tiles showed 9, 2, and 5. I counted the data myself and got the same numbers. Claude also noticed a problem I would have missed: some descriptions had commas in them, which could have mixed up the columns.
 
-AI moved fastest on the parts that followed a clear spec. Because the starter README described exactly which five endpoints the page called and what each should return, Claude built the list, summary, save, status-update, and export endpoints in one pass. They worked the first time I loaded the page, with the table filling and the tiles showing 9, 2, and 5. It also caught something I wouldn't have: some descriptions contain commas inside quotes, so a simple "split on commas" approach would have pushed those rows' values into the wrong columns.
+One result looked wrong but wasn’t. After I added a test request, the “Completed this month” tile changed from 5 to 1. At first I thought the app was broken. Then I read the rule: the tile counts completed requests in the month of the newest request. My test request was from November, so the tile started counting November instead of August. The number was correct, but it could confuse someone who doesn’t know the rule. I only trusted it after counting it myself from the exported file.
 
-My genuine almost-right moment came right after the first successful save. I added a test request and the "Completed this month" tile dropped from 5 to 0. It looked like the save had broken the math. When I checked the rule in the README, the tile counts completed requests in the month of the newest request, and my test entry was dated November, a month with nothing completed. So the number was technically correct but misleading, and I only understood it by recalculating by hand from the source data instead of trusting the screen.
+My biggest lesson came after I put the app online. It could show requests, but it couldn’t save new ones. The problem was that the app saved data in a file, and the live server doesn’t let you change files. Moving the data to a Supabase database fixed it.
 
-The bigger lesson was deployment: everything worked on my laptop and failed on Netlify, because a file inside the code isn't permanent storage on a live site. Next time I'd ask up front, "Where will this data live once it's deployed, and will it survive a refresh and a redeploy?" I'd also give Claude my three-part bug report (what I did, what I expected, what happened) from the start instead of describing the problem loosely.
+Next time, I would ask early: “Where will the data be saved once the app is live?” I would also describe problems the same way every time: what I did, what I expected, and what happened. That got me a clear answer right away.
